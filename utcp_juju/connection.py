@@ -19,7 +19,10 @@ def _ssl_context(config: JujuConfig) -> ssl.SSLContext | None:
     if not config.tls:
         return None
     if config.ca_cert:
-        return ssl.create_default_context(cadata=config.ca_cert)
+        try:
+            return ssl.create_default_context(cadata=config.ca_cert)
+        except ssl.SSLError as exc:
+            raise JujuError(f'the controller CA certificate is not valid PEM: {exc}') from None
     return ssl.create_default_context()
 
 

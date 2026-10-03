@@ -85,6 +85,14 @@ async def test_unreachable_controller_reports_every_endpoint():
         await executor.call(FULL_STATUS, {'model': 'prod'})
 
 
+async def test_invalid_ca_certificate_is_a_juju_error():
+    executor = JujuExecutor(
+        JujuConfig(endpoints=('127.0.0.1:1',), username='u', password='p', ca_cert='not a cert')
+    )
+    with pytest.raises(JujuError, match='CA certificate is not valid PEM'):
+        await executor.call(FULL_STATUS, {'model': 'prod'})
+
+
 async def test_call_text_returns_errors_as_text(controller, config):
     tools = JujuTools(config)
     controller.respond('Client.FullStatus', {'model': {'name': 'prod'}})
