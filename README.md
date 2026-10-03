@@ -16,6 +16,8 @@ binary, no client store and no separate server process.
   [UTCP](https://www.utcp.io) manual with a `juju` protocol plugin, for hosts that already
   run a UTCP client.
 
+For why it is built this way, see [About the design](docs/explanation/design.md).
+
 ## Install
 
 ```bash
