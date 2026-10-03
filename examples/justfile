@@ -1,0 +1,77 @@
+set ignore-comments
+
+# Model the example deploys into and asks about (override: just model=prod run).
+model := 'utcp-example'
+
+# Where `env` writes the controller CA certificate; ignored by git.
+ca_file := justfile_directory() / '.juju-ca.pem'
+
+# this is the first recipe in the file, so it will run if just is called without a recipe
+[doc('Describe usage and list the available recipes.')]
+help:
+    @just --list --unsorted
+
+##########
+# Setup
+##########
+
+[doc('Create the example model on the current (LXD) controller and deploy two ubuntu units.')]
+deploy-model:
+    juju add-model '{{model}}'
+    juju deploy --model '{{model}}' ubuntu --num-units 2
+    juju wait-for application ubuntu --model '{{model}}' --query='status=="active"' --timeout 20m
+    juju status --model '{{model}}'
+
+[doc('Destroy the example model and everything in it.')]
+destroy-model:
+    juju destroy-model '{{model}}' --no-prompt --destroy-storage
+
+
+[doc('Create a Juju user that can only read the example model (asks for its password). Run once.')]
+create-reader user='agent-ro':
+    juju add-user '{{user}}'
+    juju change-user-password '{{user}}'
+    juju grant '{{user}}' read '{{model}}'
+
+[doc('Print the export lines for the current controller; add the password and run them.')]
+env user='agent-ro':
+    #!/usr/bin/env -S bash -ueo pipefail
+    juju show-controller --format json | python3 -c '
+    import json, sys
+    (details,) = (c["details"] for c in json.load(sys.stdin).values())
+    open(sys.argv[1], "w").write(details["ca-cert"])
+    print("export UTCP_JUJU_ENDPOINT=" + ",".join(details["api-endpoints"]))
+    ' '{{ca_file}}'
+    echo "export UTCP_JUJU_CA_CERT_FILE='{{ca_file}}'"
+    echo "export UTCP_JUJU_USERNAME='{{user}}'"
+    echo "export UTCP_JUJU_PASSWORD=...        # the password set in create-reader"
+    echo "export GEMINI_API_KEY=...            # your Gemini API key, or:"
+    echo "# export OPENAI_API_KEY=sk-...       # your OpenAI API key"
+
+[doc('Check that every variable the agent needs is exported.')]
+check-env:
+    #!/usr/bin/env -S bash -ueo pipefail
+    missing=()
+    for var in UTCP_JUJU_ENDPOINT UTCP_JUJU_USERNAME UTCP_JUJU_PASSWORD; do
+        [ -n "${!var:-}" ] || missing+=("$var")
+    done
+    if [ -z "${UTCP_JUJU_CA_CERT:-}" ] && [ -z "${UTCP_JUJU_CA_CERT_FILE:-}" ]; then
+        missing+=("UTCP_JUJU_CA_CERT or UTCP_JUJU_CA_CERT_FILE")
+    fi
+    if [ -z "${GEMINI_API_KEY:-}" ] && [ -z "${OPENAI_API_KEY:-}" ]; then
+        missing+=("GEMINI_API_KEY or OPENAI_API_KEY")
+    fi
+    if [ ${#missing[@]} -ne 0 ]; then
+        printf 'export these first (see `just env`): %s\n' "${missing[*]}" >&2
+        exit 1
+    fi
+    echo 'Environment is complete.'
+
+##########
+# Run
+##########
+
+[positional-arguments]
+[doc('Ask the agent about the example model, e.g. `just run "Is anything broken?"`.')]
+run prompt='Which units are not active and idle, and why?': check-env
+    uv run --group examples python juju_agent.py '{{model}}' "$1"
