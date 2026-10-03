@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "utcp-juju"
+version = "0.1.0"
+description = "Read-only Juju function tools for AI agents, generated from Juju's facade RPC schema (UTCP manual + juju protocol plugin)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "orjson>=3.10",
+    "pydantic>=2.0",
+    "utcp>=1.1.2",
+    "websockets>=14.0",
+]
+
+[project.optional-dependencies]
+openai-agents = ["openai-agents>=0.17"]
+google-adk = ["google-adk>=1.0"]
+
+[project.entry-points."utcp.plugins"]
+juju = "utcp_juju:register"
+
+[dependency-groups]
+lint = [
+    "ruff>=0.9",
+]
+gen = [
+    "pyyaml>=6.0",
+]
+test = [
+    "google-adk>=1.0",
+    "openai-agents>=0.17",
+    "pytest>=8.0",
+    "pytest-asyncio>=1.0",
+    "pyyaml>=6.0",
+    "utcp-file>=1.1",
+]
+functional = [
+    { include-group = "test" },
+    "pytest-jubilant>=2,<3",
+]
+examples = [
+    "openai-agents[litellm]>=0.17",
+]
+dev = [
+    { include-group = "lint" },
+    { include-group = "gen" },
+    { include-group = "functional" },
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["utcp_juju"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests/unit"]
+
+[tool.ruff]
+line-length = 99
+target-version = "py312"
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "N", "RUF", "SIM", "UP", "W"]
