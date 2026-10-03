@@ -4,6 +4,10 @@ set ignore-comments
 # (override: just juju_repo=~/src/juju vendor-schema).
 series := '3.6'
 juju_repo := '../juju'
+schema_file := 'schemas/' + series + '/schema.json'
+schema_source := 'schemas/' + series + '/source.yaml'
+manual_file := 'utcp_juju/data/juju.utcp.json'
+manual_args := '--schema ' + schema_file + ' --allowlist manualgen/allowlist.yaml --out ' + manual_file
 
 # this is the first recipe in the file, so it will run if just is called without a recipe
 [doc('Describe usage and list the available recipes.')]
@@ -45,17 +49,26 @@ functional-test *args='':
 # Manual
 ##########
 
-[doc('Vendor schema.json of a juju release tag from a local juju git checkout (reads git only).')]
+[doc('Vendor schema.json of a juju release tag from a local juju checkout, recording its commit.')]
 vendor-schema tag='v3.6.29':
-    git -C '{{juju_repo}}' show '{{tag}}:apiserver/facades/schema.json' > 'schemas/{{series}}/schema.json'
+    #!/usr/bin/env -S bash -ueo pipefail
+    commit=$(git -C '{{juju_repo}}' rev-parse '{{tag}}^{commit}')
+    git -C '{{juju_repo}}' show "$commit:apiserver/facades/schema.json" > '{{schema_file}}'
+    printf '%s\n' \
+        '# Where schema.json comes from. Written by `just vendor-schema`; do not edit.' \
+        'repository: https://github.com/juju/juju' \
+        'path: apiserver/facades/schema.json' \
+        'tag: {{tag}}' \
+        "commit: $commit" > '{{schema_source}}'
+    echo "vendored {{tag}} ($commit)"
 
 [doc('Generate utcp_juju/data/juju.utcp.json from the schema and the allowlist.')]
 gen-manual:
-    uv run --group gen python -m utcp_juju.gen.generator
+    uv run --group gen python -m manualgen {{manual_args}}
 
 [doc('Fail if the committed manual does not match the schema and the allowlist.')]
 check-manual:
-    uv run --group gen python -m utcp_juju.gen.generator --check
+    uv run --group gen python -m manualgen {{manual_args}} --check
 
 [doc('List the tools in the manual.')]
 list-tools:

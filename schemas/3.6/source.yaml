@@ -1,0 +1,5 @@
+# Where schema.json comes from. Written by `just vendor-schema`; do not edit.
+repository: https://github.com/juju/juju
+path: apiserver/facades/schema.json
+tag: v3.6.29
+commit: 0e1f039383930a8ce633d2c0d10c3974447a32b2

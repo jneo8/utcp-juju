@@ -1,0 +1,18 @@
+# Read-only allowlist for Juju 3.6 client facades.
+#
+# Facades and method names refer to the vendored schemas/3.6/schema.json. Before adding a
+# method, read its apiserver implementation at the commit in schemas/3.6/source.yaml: list
+# it only if it reads state and nothing else, returns no secret material, contacts no
+# external service, and is permitted for a user holding only `read` on the model.
+#
+# Per-method keys (validated by manualgen/allowlist.py; unknown keys are an error):
+#   description    one sentence for the agent
+#   default_params arguments filled in when the agent omits them (optional)
+series: '3.6'
+
+facades:
+  Client:
+    methods:
+      FullStatus:
+        description: Full model status - machines, applications, units, relations, offers and their workload/agent status (like `juju status`). Several MB on large models; use `patterns` to narrow.
+        default_params: {patterns: []}

@@ -1,0 +1,175 @@
+{
+ "utcp_version": "1.2.0",
+ "manual_version": "juju-3.6",
+ "tools": [
+  {
+   "name": "client.full_status",
+   "description": "Full model status - machines, applications, units, relations, offers and their workload/agent status (like `juju status`). Several MB on large models; use `patterns` to narrow.",
+   "inputs": {
+    "type": "object",
+    "properties": {
+     "model": {
+      "type": "string",
+      "description": "Model name, `owner/name`, or model UUID."
+     },
+     "include-storage": {
+      "type": "boolean"
+     },
+     "patterns": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    },
+    "required": [
+     "model"
+    ]
+   },
+   "outputs": {
+    "type": "object",
+    "properties": {
+     "applications": {
+      "type": "object",
+      "patternProperties": {
+       ".*": {
+        "type": "object"
+       }
+      }
+     },
+     "branches": {
+      "type": "object",
+      "patternProperties": {
+       ".*": {
+        "type": "object"
+       }
+      }
+     },
+     "controller-timestamp": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "filesystems": {
+      "type": "array",
+      "items": {
+       "type": "object"
+      }
+     },
+     "machines": {
+      "type": "object",
+      "patternProperties": {
+       ".*": {
+        "type": "object"
+       }
+      }
+     },
+     "model": {
+      "type": "object",
+      "properties": {
+       "available-version": {
+        "type": "string"
+       },
+       "cloud-tag": {
+        "type": "string"
+       },
+       "meter-status": {
+        "type": "object"
+       },
+       "model-status": {
+        "type": "object"
+       },
+       "name": {
+        "type": "string"
+       },
+       "region": {
+        "type": "string"
+       },
+       "sla": {
+        "type": "string"
+       },
+       "type": {
+        "type": "string"
+       },
+       "version": {
+        "type": "string"
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "name",
+       "type",
+       "cloud-tag",
+       "version",
+       "available-version",
+       "model-status",
+       "meter-status",
+       "sla"
+      ]
+     },
+     "offers": {
+      "type": "object",
+      "patternProperties": {
+       ".*": {
+        "type": "object"
+       }
+      }
+     },
+     "relations": {
+      "type": "array",
+      "items": {
+       "type": "object"
+      }
+     },
+     "remote-applications": {
+      "type": "object",
+      "patternProperties": {
+       ".*": {
+        "type": "object"
+       }
+      }
+     },
+     "storage": {
+      "type": "array",
+      "items": {
+       "type": "object"
+      }
+     },
+     "volumes": {
+      "type": "array",
+      "items": {
+       "type": "object"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "model",
+     "machines",
+     "applications",
+     "remote-applications",
+     "offers",
+     "relations",
+     "controller-timestamp",
+     "branches"
+    ]
+   },
+   "tags": [
+    "juju",
+    "read-only",
+    "client"
+   ],
+   "tool_call_template": {
+    "name": "juju",
+    "facade": "Client",
+    "method": "FullStatus",
+    "versions": {
+     "3.6": 8
+    },
+    "default_params": {
+     "patterns": []
+    },
+    "call_template_type": "juju"
+   }
+  }
+ ]
+}
