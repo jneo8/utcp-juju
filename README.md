@@ -84,17 +84,9 @@ With a UTCP client, either manual call template works once `utcp-juju` is instal
 
 ## Example agent
 
-`examples/` has a minimal OpenAI Agents SDK agent with the Juju tools, using Gemini or
-OpenAI through LiteLLM; see
-[examples/README.md](examples/README.md). In short:
-
-```bash
-cd examples
-just deploy-model             # model utcp-example with two ubuntu units
-just create-reader            # once: a Juju user that can only read it
-just env                      # prints the export lines to fill in and run
-just run 'Which machines are the ubuntu units on?'
-```
+`examples/` has two minimal agents with the Juju tools, one built with Google ADK and one
+with the OpenAI Agents SDK; both work with a Gemini or an OpenAI API key. See
+[examples/README.md](examples/README.md) for setup and usage.
 
 ## What the plugin does for the agent
 

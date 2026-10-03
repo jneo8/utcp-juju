@@ -48,7 +48,7 @@ env user='agent-ro':
     echo "export GEMINI_API_KEY=...            # your Gemini API key, or:"
     echo "# export OPENAI_API_KEY=sk-...       # your OpenAI API key"
 
-[doc('Check that every variable the agent needs is exported.')]
+[doc('Check that every variable the agents need is exported.')]
 check-env:
     #!/usr/bin/env -S bash -ueo pipefail
     missing=()
@@ -72,6 +72,11 @@ check-env:
 ##########
 
 [positional-arguments]
-[doc('Ask the agent about the example model, e.g. `just run "Is anything broken?"`.')]
-run prompt='Which units are not active and idle, and why?': check-env
-    uv run --group examples python juju_agent.py '{{model}}' "$1"
+[doc('Ask the OpenAI Agents SDK agent (Gemini or OpenAI via LiteLLM) about the example model.')]
+run-openai-example prompt='Which units are not active and idle, and why?': check-env
+    uv run --group examples python openai_agent.py '{{model}}' "$1"
+
+[positional-arguments]
+[doc('Ask the Google ADK agent (Gemini or OpenAI via LiteLLM) about the example model.')]
+run-google-example prompt='Which units are not active and idle, and why?': check-env
+    uv run --group examples python adk_agent.py '{{model}}' "$1"

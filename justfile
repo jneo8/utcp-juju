@@ -79,9 +79,14 @@ list-tools:
 ##########
 
 [positional-arguments]
-[doc('Ask the example agent about the example model; see examples/README.md for setup.')]
-example prompt='Which units are not active and idle, and why?':
-    just -f examples/justfile run "$1"
+[doc('Ask the example OpenAI Agents SDK agent about the example model; see examples/README.md.')]
+run-openai-example prompt='Which units are not active and idle, and why?':
+    just -f examples/justfile run-openai-example "$1"
+
+[positional-arguments]
+[doc('Ask the example Google ADK agent about the example model; see examples/README.md.')]
+run-google-example prompt='Which units are not active and idle, and why?':
+    just -f examples/justfile run-google-example "$1"
 
 ##########
 # Build

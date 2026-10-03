@@ -1,9 +1,15 @@
-# Example: a Juju agent
+# Example: Juju agents
 
-`juju_agent.py` is a minimal [OpenAI Agents SDK](https://openai.github.io/openai-agents-python/)
-agent that answers questions about one Juju model with the Juju tools in their default read-only mode, so
-it can look but cannot change anything. It reaches the LLM through
-[LiteLLM](https://docs.litellm.ai), so a Gemini API key or an OpenAI API key works.
+Two minimal agents that answer questions about one Juju model with the Juju tools in their
+default read-only mode, so they can look but cannot change anything:
+
+| Agent | Framework | Run with |
+|---|---|---|
+| `adk_agent.py` | [Google ADK](https://google.github.io/adk-docs/) | `just run-google-example` |
+| `openai_agent.py` | [OpenAI Agents SDK](https://openai.github.io/openai-agents-python/) | `just run-openai-example` |
+
+Both take a Gemini or an OpenAI API key, and share their instructions and model choice
+(`common.py`); they differ only in how the framework is wired.
 
 Every step below is a `just` recipe in this directory; `just` alone lists them.
 
@@ -65,23 +71,26 @@ Fill in the password and one of the API keys, run the lines in your shell, then 
 just check-env
 ```
 
-The LLM follows the key: a Gemini model with `GEMINI_API_KEY`, else an OpenAI model with
-`OPENAI_API_KEY` (Gemini wins if both are set); the defaults are in `juju_agent.py`. To
-pick another, set a [LiteLLM model name](https://docs.litellm.ai/docs/providers):
+Both agents pick the LLM the same way: a Gemini model with `GEMINI_API_KEY`, else an
+OpenAI model with `OPENAI_API_KEY` (Gemini wins if both are set); the defaults are in
+`common.py`. To pick another, set a [LiteLLM model name](https://docs.litellm.ai/docs/providers):
 
 ```bash
-export LLM_MODEL=gemini/<model>
+export LLM_MODEL=openai/<model>      # or gemini/<model>
 ```
+
+Both reach every model through [LiteLLM](https://docs.litellm.ai).
 
 ## 4. Ask a question
 
 ```bash
-just run                                         # default: which units are not active/idle, and why
-just run 'Which machines are the ubuntu units on, and what are their addresses?'
-just model=prod run 'Summarise the relations of the postgresql application.'
+just run-google-example              # default question: what is not healthy
+just run-google-example 'Which machines are the ubuntu units on, and what are their addresses?'
+just run-openai-example 'Which machines are the ubuntu units on?'
+just model=prod run-google-example 'Summarise the relations of the postgresql application.'
 ```
 
-From the repository root the same run is `just example '...'`.
+The same recipes exist at the repository root.
 
 ## 5. Clean up
 
@@ -92,8 +101,8 @@ juju remove-user agent-ro --yes     # if you no longer need the user
 
 ## What happens
 
-1. `for_openai_agents()` turns the bundled UTCP manual into one `FunctionTool`; the agent's
-   model is a `LitellmModel`, so the tool works the same with Gemini or OpenAI.
+1. `for_google_adk()` or `for_openai_agents()` turns the bundled UTCP manual into one
+   framework tool per Juju operation.
 2. The agent picks a tool and calls it with `{"model": "utcp-example", ...}`.
 3. The tool logs in to the controller over its websocket API as the read-only user, looks up
    the model's UUID, sends the facade request, and returns the JSON.

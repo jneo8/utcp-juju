@@ -42,6 +42,7 @@ functional = [
     "pytest-jubilant>=2,<3",
 ]
 examples = [
+    "google-adk>=1.0",
     "openai-agents[litellm]>=0.17",
 ]
 dev = [

@@ -2479,6 +2479,7 @@ dev = [
     { name = "utcp-file" },
 ]
 examples = [
+    { name = "google-adk" },
     { name = "openai-agents", extra = ["litellm"] },
 ]
 functional = [
@@ -2527,7 +2528,10 @@ dev = [
     { name = "ruff", specifier = ">=0.9" },
     { name = "utcp-file", specifier = ">=1.1" },
 ]
-examples = [{ name = "openai-agents", extras = ["litellm"], specifier = ">=0.17" }]
+examples = [
+    { name = "google-adk", specifier = ">=1.0" },
+    { name = "openai-agents", extras = ["litellm"], specifier = ">=0.17" },
+]
 functional = [
     { name = "google-adk", specifier = ">=1.0" },
     { name = "openai-agents", specifier = ">=0.17" },
