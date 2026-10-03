@@ -88,6 +88,11 @@ run-openai-example prompt='Which units are not active and idle, and why?':
 run-google-example prompt='Which units are not active and idle, and why?':
     just -f examples/justfile run-google-example "$1"
 
+[positional-arguments]
+[doc('Call a tool through the example UTCP client (no LLM); see examples/README.md.')]
+run-utcp-example tool='' arguments='{}':
+    just -f examples/justfile run-utcp-example "$@"
+
 ##########
 # Build
 ##########

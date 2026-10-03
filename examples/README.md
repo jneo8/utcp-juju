@@ -1,15 +1,18 @@
-# Example: Juju agents
+# Examples
 
-Two minimal agents that answer questions about one Juju model with the Juju tools in their
-default read-only mode, so they can look but cannot change anything:
+Three ways to use the Juju tools, all in their default read-only mode against one Juju
+model:
 
-| Agent | Framework | Run with |
+| Example | What it shows | Run with |
 |---|---|---|
-| `adk_agent.py` | [Google ADK](https://google.github.io/adk-docs/) | `just run-google-example` |
-| `openai_agent.py` | [OpenAI Agents SDK](https://openai.github.io/openai-agents-python/) | `just run-openai-example` |
+| `adk_agent.py` | an agent built with [Google ADK](https://google.github.io/adk-docs/) | `just run-google-example` |
+| `openai_agent.py` | an agent built with the [OpenAI Agents SDK](https://openai.github.io/openai-agents-python/) | `just run-openai-example` |
+| `utcp_client.py` | a plain [UTCP](https://www.utcp.io) client calling the tools directly, no LLM | `just run-utcp-example` |
 
-Both take a Gemini or an OpenAI API key, and share their instructions and model choice
-(`common.py`); they differ only in how the framework is wired.
+The two agents take a Gemini or an OpenAI API key, and share their instructions and model
+choice (`common.py`); they differ only in how the framework is wired. The UTCP client needs
+no API key: it is what a Python program that already loads its tools through UTCP does to
+pick up the Juju tools.
 
 Every step below is a `just` recipe in this directory; `just` alone lists them.
 
@@ -65,7 +68,8 @@ export GEMINI_API_KEY=...            # your Gemini API key, or:
 # export OPENAI_API_KEY=sk-...       # your OpenAI API key
 ```
 
-Fill in the password and one of the API keys, run the lines in your shell, then check:
+Fill in the password and one of the API keys (the UTCP client example needs no API key),
+run the lines in your shell, then check:
 
 ```bash
 just check-env
@@ -92,7 +96,21 @@ just model=prod run-google-example 'Summarise the relations of the postgresql ap
 
 The same recipes exist at the repository root.
 
-## 5. Clean up
+## 5. Call the tools without an LLM
+
+```bash
+just run-utcp-example                                     # list the tools
+just run-utcp-example juju.client.full_status             # call one on the example model
+just run-utcp-example juju.client.full_status '{"patterns": ["ubuntu"]}'
+```
+
+The tool name and JSON arguments are passed straight to `UtcpClient.call_tool`; the example
+model is added as `model` unless the arguments name one. All the client is configured with
+is a single manual entry, `{"name": "juju", "call_template_type": "juju"}`: installing
+utcp-juju registers the `juju` plugin with UTCP, and the plugin supplies the bundled manual
+and executes its tools. The `juju.` prefix on each tool name is the manual's name.
+
+## 6. Clean up
 
 ```bash
 just destroy-model                  # removes utcp-example and its machines

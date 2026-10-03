@@ -48,8 +48,8 @@ env user='agent-ro':
     echo "export GEMINI_API_KEY=...            # your Gemini API key, or:"
     echo "# export OPENAI_API_KEY=sk-...       # your OpenAI API key"
 
-[doc('Check that every variable the agents need is exported.')]
-check-env:
+[doc('Check that the Juju settings are exported.')]
+check-juju-env:
     #!/usr/bin/env -S bash -ueo pipefail
     missing=()
     for var in UTCP_JUJU_ENDPOINT UTCP_JUJU_USERNAME UTCP_JUJU_PASSWORD; do
@@ -58,11 +58,16 @@ check-env:
     if [ -z "${UTCP_JUJU_CA_CERT:-}" ] && [ -z "${UTCP_JUJU_CA_CERT_FILE:-}" ]; then
         missing+=("UTCP_JUJU_CA_CERT or UTCP_JUJU_CA_CERT_FILE")
     fi
-    if [ -z "${GEMINI_API_KEY:-}" ] && [ -z "${OPENAI_API_KEY:-}" ]; then
-        missing+=("GEMINI_API_KEY or OPENAI_API_KEY")
-    fi
     if [ ${#missing[@]} -ne 0 ]; then
         printf 'export these first (see `just env`): %s\n' "${missing[*]}" >&2
+        exit 1
+    fi
+
+[doc('Check that the Juju settings and an LLM API key are exported.')]
+check-env: check-juju-env
+    #!/usr/bin/env -S bash -ueo pipefail
+    if [ -z "${GEMINI_API_KEY:-}" ] && [ -z "${OPENAI_API_KEY:-}" ]; then
+        echo 'export these first (see `just env`): GEMINI_API_KEY or OPENAI_API_KEY' >&2
         exit 1
     fi
     echo 'Environment is complete.'
@@ -80,3 +85,8 @@ run-openai-example prompt='Which units are not active and idle, and why?': check
 [doc('Ask the Google ADK agent (Gemini or OpenAI via LiteLLM) about the example model.')]
 run-google-example prompt='Which units are not active and idle, and why?': check-env
     uv run --group examples python adk_agent.py '{{model}}' "$1"
+
+[positional-arguments]
+[doc('Call a tool through a plain UTCP client (no LLM); with no tool, list the tools.')]
+run-utcp-example tool='' arguments='{}': check-juju-env
+    @uv run --group examples python utcp_client.py --model '{{model}}' "$1" "$2"

@@ -82,10 +82,11 @@ With a UTCP client, either manual call template works once `utcp-juju` is instal
 }  # required, or every tool is filtered out
 ```
 
-## Example agent
+## Examples
 
 `examples/` has two minimal agents with the Juju tools, one built with Google ADK and one
-with the OpenAI Agents SDK; both work with a Gemini or an OpenAI API key. See
+with the OpenAI Agents SDK, both working with a Gemini or an OpenAI API key, and a plain
+UTCP client that calls the tools without an LLM. See
 [examples/README.md](examples/README.md) for setup and usage.
 
 ## What the plugin does for the agent
