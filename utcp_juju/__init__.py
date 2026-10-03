@@ -9,10 +9,27 @@ from utcp_juju.toolset import JujuTools, ToolDef
 
 
 def register() -> None:
-    """UTCP plugin entry point: register the ``juju`` call template."""
-    from utcp.plugins.discovery import register_call_template
+    """UTCP plugin entry point: register the ``juju`` protocol and call template."""
+    from utcp.plugins.discovery import register_call_template, register_communication_protocol
 
+    from utcp_juju.protocol import JujuCommunicationProtocol
+
+    register_communication_protocol('juju', JujuCommunicationProtocol())
     register_call_template('juju', JujuCallTemplateSerializer())
+
+
+def for_openai_agents(config: JujuConfig | None = None) -> list:
+    """Tools for the OpenAI Agents SDK. Needs the ``openai-agents`` extra."""
+    from utcp_juju.adapters.openai_agents import for_openai_agents as build
+
+    return build(config)
+
+
+def for_google_adk(config: JujuConfig | None = None) -> list:
+    """Tools for Google ADK. Needs the ``google-adk`` extra."""
+    from utcp_juju.adapters.google_adk import for_google_adk as build
+
+    return build(config)
 
 
 __all__ = [
@@ -24,6 +41,8 @@ __all__ = [
     'JujuTools',
     'ToolDef',
     'ToolSpec',
+    'for_google_adk',
+    'for_openai_agents',
     'load_manual',
     'register',
     'utcp_manual',
